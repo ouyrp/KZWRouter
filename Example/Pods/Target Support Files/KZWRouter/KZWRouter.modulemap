@@ -1,0 +1,6 @@
+framework module KZWRouter {
+  umbrella header "KZWRouter-umbrella.h"
+
+  export *
+  module * { export * }
+}

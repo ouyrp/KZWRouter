@@ -1,0 +1,16 @@
+PODS:
+  - KZWRouter (0.1.0)
+
+DEPENDENCIES:
+  - KZWRouter (from `../`)
+
+EXTERNAL SOURCES:
+  KZWRouter:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  KZWRouter: 62c0657dbb02aed8d3c816366f08fbf9bf4888ae
+
+PODFILE CHECKSUM: 17dc7e5049795f364f6e09bd4d79c518f63cb5ab
+
+COCOAPODS: 1.5.3
