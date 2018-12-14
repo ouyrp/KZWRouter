@@ -75,7 +75,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     //    }];
     
     NSString *actionName = [[NSURL URLWithString:url].path stringByReplacingOccurrencesOfString:@"/" withString:@""];
-    id result = [self performTarget:[NSURL URLWithString:url].host action:actionName params:params shouldCacheTarget:NO];
+    id result = [self performTarget:[NSURL URLWithString:url].host action:actionName params:params.count > 0 ? params : nil shouldCacheTarget:NO];
     return result;
 }
 
@@ -158,7 +158,12 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     }
     
     // generate action
-    NSString *actionString = [NSString stringWithFormat:@"%@:", actionName];
+    NSString *actionString = @"";
+    if (params) {
+        actionString = [NSString stringWithFormat:@"%@:", actionName];
+    } else {
+        actionString = actionName;
+    }
     SEL action = NSSelectorFromString(actionString);
     
     if (target == nil) {
@@ -188,8 +193,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
 }
 
 - (void)releaseCachedTargetWithTargetName:(NSString *)targetName {
-    NSString *targetClassString = [NSString stringWithFormat:@"%@", targetName];
-    [self.cachedTarget removeObjectForKey:targetClassString];
+    [self.cachedTarget removeObjectForKey:targetName];
 }
 
 #pragma mark - private methods
