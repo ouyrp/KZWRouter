@@ -20,6 +20,13 @@ it, simply add the following line to your Podfile:
 pod 'KZWRouter'
 ```
 
+## 使用说明
+调用open 方法参数url的格式为：targetName://actionName?urlString=https%3a%2f%2fwww.zhihu.com%2f
+如果参数中有链接参数记得链接需要encode，如上，
+
+如果带回调，不建议使用open方法，使用category直接对回调进行参数封装，使用例子在Demo中已经给了，有问题可以给我发邮件，看到就会处理
+
+
 ## Author
 
 ouyrp,mooncoder@163.com

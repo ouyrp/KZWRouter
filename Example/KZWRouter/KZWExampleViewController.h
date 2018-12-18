@@ -8,6 +8,6 @@
 
 @import UIKit;
 
-@interface KZWViewController : UIViewController
+@interface KZWExampleViewController : UIViewController
 
 @end

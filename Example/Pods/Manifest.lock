@@ -1,16 +1,78 @@
 PODS:
-  - KZWRouter (0.1.0)
+  - AFNetworking (3.2.1):
+    - AFNetworking/NSURLSession (= 3.2.1)
+    - AFNetworking/Reachability (= 3.2.1)
+    - AFNetworking/Security (= 3.2.1)
+    - AFNetworking/Serialization (= 3.2.1)
+    - AFNetworking/UIKit (= 3.2.1)
+  - AFNetworking/NSURLSession (3.2.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.2.1)
+  - AFNetworking/Security (3.2.1)
+  - AFNetworking/Serialization (3.2.1)
+  - AFNetworking/UIKit (3.2.1):
+    - AFNetworking/NSURLSession
+  - FMWebViewJavascriptBridge (3.0.1)
+  - KZWRouter (3.0.0)
+  - KZWUI (1.0.3):
+    - KZWUI/Content (= 1.0.3)
+  - KZWUI/Content (1.0.3):
+    - AFNetworking
+    - KZWUtils
+    - Masonry
+    - MBProgressHUD
+  - KZWUtils (1.0.6):
+    - KZWUtils/Content (= 1.0.6)
+  - KZWUtils/Content (1.0.6):
+    - MJRefresh
+    - SAMKeychain
+  - KZWWebViewController (2.0.1):
+    - FMWebViewJavascriptBridge
+    - KZWUI
+  - KZWWebViewController_Category (2.0.0):
+    - KZWRouter
+  - Masonry (1.1.0)
+  - MBProgressHUD (1.1.0)
+  - MJRefresh (3.1.15.7)
+  - SAMKeychain (1.5.3)
 
 DEPENDENCIES:
   - KZWRouter (from `../`)
+  - KZWWebViewController
+  - KZWWebViewController_Category
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AFNetworking
+    - FMWebViewJavascriptBridge
+    - KZWUI
+    - KZWUtils
+    - KZWWebViewController
+    - KZWWebViewController_Category
+    - Masonry
+    - MBProgressHUD
+    - MJRefresh
+    - SAMKeychain
 
 EXTERNAL SOURCES:
   KZWRouter:
     :path: "../"
 
 SPEC CHECKSUMS:
-  KZWRouter: 62c0657dbb02aed8d3c816366f08fbf9bf4888ae
+  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  FMWebViewJavascriptBridge: 746efdac6e6ced01b867e173914a06eb73d3d1f6
+  KZWRouter: 6b73725a3ba021e0b40bb59759ca5ba8b524b1a6
+  KZWUI: b73999156e2a43a9d169a8b90f91497e5dccf74d
+  KZWUtils: 1bcf6065e6902ae62d49cfb264139294de835212
+  KZWWebViewController: c898665d5d8d21c91d320e995ced01778936dfef
+  KZWWebViewController_Category: 1747efe4bc2e2c68a2aeb22383ddb120b9dd8360
+  Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
+  MJRefresh: 697f8ec75ebdbe9207767bb682cf0f51b0d8a41f
+  SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
 
-PODFILE CHECKSUM: 17dc7e5049795f364f6e09bd4d79c518f63cb5ab
+PODFILE CHECKSUM: c9cb751b122708a3332d1621186d728aa64190d2
 
 COCOAPODS: 1.5.3

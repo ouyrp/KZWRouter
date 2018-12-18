@@ -1,0 +1,6 @@
+framework module KZWWebViewController_Category {
+  umbrella header "KZWWebViewController_Category-umbrella.h"
+
+  export *
+  module * { export * }
+}

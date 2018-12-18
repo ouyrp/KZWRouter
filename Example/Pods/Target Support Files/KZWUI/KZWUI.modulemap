@@ -1,0 +1,6 @@
+framework module KZWUI {
+  umbrella header "KZWUI-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,6 @@
+framework module KZWUtils {
+  umbrella header "KZWUtils-umbrella.h"
+
+  export *
+  module * { export * }
+}
