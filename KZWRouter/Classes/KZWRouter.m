@@ -68,14 +68,18 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
         [params setObject:[elts lastObject] forKey:[elts firstObject]];
     }
     
-    //    NSURLComponents *cp = [NSURLComponents componentsWithURL:[NSURL URLWithString:url] resolvingAgainstBaseURL:NO];
-    //    NSMutableDictionary *params = [NSMutableDictionary dictionaryWithCapacity:1];
-    //    [cp.queryItems enumerateObjectsUsingBlock:^(NSURLQueryItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    //        [params setValue: obj.value forKey: obj.name];
-    //    }];
+    NSString *tagetName = nil;
+    if ([url containsString:@":"]) {
+        tagetName = [url componentsSeparatedByString:@":"].firstObject;
+    }
     
-    NSString *actionName = [[NSURL URLWithString:url].path stringByReplacingOccurrencesOfString:@"/" withString:@""];
-    id result = [self performTarget:[NSURL URLWithString:url].host action:actionName params:params.count > 0 ? params : nil shouldCacheTarget:NO];
+    NSString *actionName = nil;
+    if ([url containsString:@":"]) {
+        NSString *pathString = [[NSURL URLWithString:url].path stringByReplacingOccurrencesOfString:@"/" withString:@""];
+        actionName = [pathString componentsSeparatedByString:@":"][1];
+    }
+    
+    id result = [self performTarget:tagetName action:actionName params:params.count > 0 ? params : nil shouldCacheTarget:NO];
     return result;
 }
 
