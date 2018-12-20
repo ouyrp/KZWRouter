@@ -26,63 +26,6 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     return sharedInstance;
 }
 
-- (UIViewController *)hostViewController {
-    if (!_hostViewController) {
-        return [self window].rootViewController;
-    }
-    return _hostViewController;
-}
-
-- (UIViewController *)getVisibleViewControllerFrom:(UIViewController *)vc {
-    if ([vc isKindOfClass:[UINavigationController class]]) {
-        return [self getVisibleViewControllerFrom:[((UINavigationController *)vc) visibleViewController]];
-    } else if ([vc isKindOfClass:[UITabBarController class]]) {
-        return [self getVisibleViewControllerFrom:[((UITabBarController *)vc) selectedViewController]];
-    } else {
-        if (vc.presentedViewController) {
-            return [self getVisibleViewControllerFrom:vc.presentedViewController];
-        } else {
-            return vc;
-        }
-    }
-}
-
-#define HINT_TEXT @"class you give is %@, but the class must be subclass of `UINavigationController`"
-- (void)setNavigationClass:(Class)navigationClass {
-    if (_navigationClass == navigationClass) {
-        return;
-    }
-    if (![navigationClass isSubclassOfClass:[UINavigationController class]]) {
-        [NSException raise:@"navigation class is not right" format:HINT_TEXT, navigationClass];
-    }
-    _navigationClass = navigationClass;
-}
-#undef HINT_TEXT
-
-- (UIViewController *)controllerForUrl:(NSString *)url {
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    NSString *urlString = [[NSURL URLWithString:url] query];
-    for (NSString *param in [urlString componentsSeparatedByString:@"&"]) {
-        NSArray *elts = [param componentsSeparatedByString:@"="];
-        if([elts count] < 2) continue;
-        [params setObject:[elts lastObject] forKey:[elts firstObject]];
-    }
-    
-    NSString *tagetName = nil;
-    if ([url containsString:@":"]) {
-        tagetName = [url componentsSeparatedByString:@":"].firstObject;
-    }
-    
-    NSString *actionName = nil;
-    if ([url containsString:@":"]) {
-        NSString *pathString = [[NSURL URLWithString:url].path stringByReplacingOccurrencesOfString:@"/" withString:@""];
-        actionName = [pathString componentsSeparatedByString:@":"][1];
-    }
-    
-    id result = [self performTarget:tagetName action:actionName params:params.count > 0 ? params : nil shouldCacheTarget:NO];
-    return result;
-}
-
 - (void)open:(NSString *)url {
     [self open:url animated:YES];
 }
@@ -99,7 +42,6 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     
     UINavigationController *wrappedNav = wrapperControllerInNav(self.navigationClass, controller);
     
-    // if the navigationController is nil, then just present;
     if (!hostNav) {
         [visibleController presentViewController:wrappedNav animated:animated completion:nil];
         return;
@@ -127,13 +69,11 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
         [params setObject:[elts lastObject] forKey:[elts firstObject]];
     }
     
-    // 这里这么写主要是出于安全考虑，防止黑客通过远程方式调用本地模块。这里的做法足以应对绝大多数场景，如果要求更加严苛，也可以做更加复杂的安全逻辑。
     NSString *actionName = [url.path stringByReplacingOccurrencesOfString:@"/" withString:@""];
     if ([actionName hasPrefix:@"native"]) {
         return @(NO);
     }
     
-    // 这个demo针对URL的路由处理非常简单，就只是取对应的target名字和method名字，但这已经足以应对绝大部份需求。如果需要拓展，可以在这个方法调用之前加入完整的路由逻辑
     id result = [self performTarget:url.host action:actionName params:params shouldCacheTarget:NO];
     if (completion) {
         if (result) {
@@ -148,7 +88,6 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
 - (id)performTarget:(NSString *)targetName action:(NSString *)actionName params:(NSDictionary *)params shouldCacheTarget:(BOOL)shouldCacheTarget {
     NSString *swiftModuleName = params[KZWMediatorParamsKeySwiftTargetModuleName];
     
-    // generate target
     NSString *targetClassString = nil;
     if (swiftModuleName.length > 0) {
         targetClassString = [NSString stringWithFormat:@"%@.%@", swiftModuleName, targetName];
@@ -161,7 +100,6 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
         target = [[targetClass alloc] init];
     }
     
-    // generate action
     NSString *actionString = @"";
     if (params) {
         actionString = [NSString stringWithFormat:@"%@:", actionName];
@@ -171,8 +109,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     SEL action = NSSelectorFromString(actionString);
     
     if (target == nil) {
-        // 这里是处理无响应请求的地方之一，这个demo做得比较简单，如果没有可以响应的target，就直接return了。实际开发过程中是可以事先给一个固定的target专门用于在这个时候顶上，然后处理这种请求的
-        [self NoTargetActionResponseWithTargetString:targetClassString selectorString:actionString originParams:params];
+        [NSException raise:@"target can't nil" format:@"Not Support here, pls check"];
         return nil;
     }
     
@@ -183,47 +120,13 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     if ([target respondsToSelector:action]) {
         return [self safePerformAction:action target:target params:params];
     } else {
-        // 这里是处理无响应请求的地方，如果无响应，则尝试调用对应target的notFound方法统一处理
-        SEL action = NSSelectorFromString(@"KZWRouterNoAction:");
-        if ([target respondsToSelector:action]) {
-            return [self safePerformAction:action target:target params:params];
-        } else {
-            // 这里也是处理无响应请求的地方，在notFound都没有的时候，这个demo是直接return了。实际开发过程中，可以用前面提到的固定的target顶上的。
-            [self NoTargetActionResponseWithTargetString:targetClassString selectorString:actionString originParams:params];
-            [self.cachedTarget removeObjectForKey:targetClassString];
-            return nil;
-        }
+        [NSException raise:@"action name is not right" format:@"Not Support here, pls check"];
+        return nil;
     }
 }
 
 - (void)releaseCachedTargetWithTargetName:(NSString *)targetName {
     [self.cachedTarget removeObjectForKey:targetName];
-}
-
-#pragma mark - private methods
-- (void)NoTargetActionResponseWithTargetString:(NSString *)targetString selectorString:(NSString *)selectorString originParams:(NSDictionary *)originParams {
-    SEL action = NSSelectorFromString(@"KZWRouterNoAction:");
-    NSObject *target = [[NSClassFromString(@"KZWRouterNoTarget") alloc] init];
-    
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    params[@"originParams"] = originParams;
-    params[@"targetString"] = targetString;
-    params[@"selectorString"] = selectorString;
-    
-    [self safePerformAction:action target:target params:params];
-}
-
-- (UIWindow *)window {
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-    if (window.windowLevel != UIWindowLevelNormal) {
-        NSArray *windows = [[UIApplication sharedApplication] windows];
-        for(window in windows) {
-            if (window.windowLevel == UIWindowLevelNormal) {
-                break;
-            }
-        }
-    }
-    return window;
 }
 
 #pragma mark - private methods
@@ -322,6 +225,76 @@ UINavigationController *wrapperControllerInNav(Class naviClass, UIViewController
         }
         return [[UINavigationController alloc] initWithRootViewController:viewController];
     }
+}
+
+- (UIWindow *)window {
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    if (window.windowLevel != UIWindowLevelNormal) {
+        NSArray *windows = [[UIApplication sharedApplication] windows];
+        for(window in windows) {
+            if (window.windowLevel == UIWindowLevelNormal) {
+                break;
+            }
+        }
+    }
+    return window;
+}
+
+- (UIViewController *)hostViewController {
+    if (!_hostViewController) {
+        return [self window].rootViewController;
+    }
+    return _hostViewController;
+}
+
+- (UIViewController *)getVisibleViewControllerFrom:(UIViewController *)vc {
+    if ([vc isKindOfClass:[UINavigationController class]]) {
+        return [self getVisibleViewControllerFrom:[((UINavigationController *)vc) visibleViewController]];
+    } else if ([vc isKindOfClass:[UITabBarController class]]) {
+        return [self getVisibleViewControllerFrom:[((UITabBarController *)vc) selectedViewController]];
+    } else {
+        if (vc.presentedViewController) {
+            return [self getVisibleViewControllerFrom:vc.presentedViewController];
+        } else {
+            return vc;
+        }
+    }
+}
+
+#define HINT_TEXT @"class you give is %@, but the class must be subclass of `UINavigationController`"
+- (void)setNavigationClass:(Class)navigationClass {
+    if (_navigationClass == navigationClass) {
+        return;
+    }
+    if (![navigationClass isSubclassOfClass:[UINavigationController class]]) {
+        [NSException raise:@"navigation class is not right" format:HINT_TEXT, navigationClass];
+    }
+    _navigationClass = navigationClass;
+}
+#undef HINT_TEXT
+
+- (UIViewController *)controllerForUrl:(NSString *)url {
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    NSString *urlString = [[NSURL URLWithString:url] query];
+    for (NSString *param in [urlString componentsSeparatedByString:@"&"]) {
+        NSArray *elts = [param componentsSeparatedByString:@"="];
+        if([elts count] < 2) continue;
+        [params setObject:[elts lastObject] forKey:[elts firstObject]];
+    }
+    
+    NSString *tagetName = nil;
+    if ([url containsString:@":"]) {
+        tagetName = [url componentsSeparatedByString:@":"].firstObject;
+    }
+    
+    NSString *actionName = nil;
+    if ([url containsString:@":"]) {
+        NSString *pathString = [[NSURL URLWithString:url].path stringByReplacingOccurrencesOfString:@"/" withString:@""];
+        actionName = [pathString componentsSeparatedByString:@":"][1];
+    }
+    
+    id result = [self performTarget:tagetName action:actionName params:params.count > 0 ? params : nil shouldCacheTarget:NO];
+    return result;
 }
 
 @end
