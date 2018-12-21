@@ -55,7 +55,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
             [hostNav.visibleViewController presentViewController:wrappedNav animated:animated completion:nil];
             return;
         default:
-            [NSException raise:@"not supporte here" format:@"Not Support here, pls check"];
+            [hostNav.visibleViewController presentViewController:wrappedNav animated:animated completion:nil];
             break;
     }
 }
@@ -109,7 +109,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     SEL action = NSSelectorFromString(actionString);
     
     if (target == nil) {
-        [NSException raise:@"target can't nil" format:@"Not Support here, pls check"];
+        NSAssert(target == nil, @"target can't nil");
         return nil;
     }
     
@@ -120,7 +120,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
     if ([target respondsToSelector:action]) {
         return [self safePerformAction:action target:target params:params];
     } else {
-        [NSException raise:@"action name is not right" format:@"Not Support here, pls check"];
+        NSAssert(![target respondsToSelector:action], @"target or action name is not right");
         return nil;
     }
 }
