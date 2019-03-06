@@ -7,6 +7,10 @@
 
 #import "KZWRouter.h"
 
+#ifndef Protocol_Service
+#define Protocol_Service @"Service"
+#endif
+
 NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParamsKeySwiftTargetModuleName";
 
 @interface KZWRouter ()
@@ -24,6 +28,27 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
         sharedInstance = [[super alloc] init];
     });
     return sharedInstance;
+}
+
+- (id)findProtocolService:(Protocol *)protocol {
+    Class cls = [self classForProtocol:protocol];
+    return [[cls alloc] init];
+}
+
+- (Class)classForProtocol:(Protocol *)protocol {
+    NSString *clsString = [NSStringFromProtocol(protocol) stringByAppendingString: Protocol_Service];
+    return NSClassFromString(clsString);
+}
+
+- (id)performSelector:(SEL)selector protocol:(Protocol *)protocol withObject:(id)object {
+    id obj = [self findProtocolService:protocol];
+    if (!obj) {
+        return nil;
+    }
+    if ([obj respondsToSelector:selector]) {
+        return [self safePerformAction:selector target:obj params:object];
+    }
+    return nil;
 }
 
 - (void)open:(NSString *)url {

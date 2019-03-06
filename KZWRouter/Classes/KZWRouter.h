@@ -110,6 +110,11 @@ extern NSString * const KZWMediatorParamsKeySwiftTargetModuleName;
  */
 + (instancetype)sharedRouter;
 
+
+- (id)findProtocolService:(Protocol *)protocol;
+
+- (id)performSelector:(SEL)selector protocol:(Protocol *)protocol withObject:(id)object;
+
 @end
 
 NS_ASSUME_NONNULL_END

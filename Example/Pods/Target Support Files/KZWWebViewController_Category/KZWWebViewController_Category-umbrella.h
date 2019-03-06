@@ -11,6 +11,7 @@
 #endif
 
 #import "KZWRouter+KZWWebViewController.h"
+#import "KZWWebView.h"
 
 FOUNDATION_EXPORT double KZWWebViewController_CategoryVersionNumber;
 FOUNDATION_EXPORT const unsigned char KZWWebViewController_CategoryVersionString[];

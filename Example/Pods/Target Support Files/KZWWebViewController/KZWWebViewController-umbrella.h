@@ -12,7 +12,10 @@
 
 #import "KZWJavaScripInterface.h"
 #import "KZWRouter_KZWWebViewController.h"
+#import "KZWURLCacheUtil.h"
+#import "KZWWeakScriptMessageDelegate.h"
 #import "KZWWebViewController.h"
+#import "KZWWebViewService.h"
 #import "WKCookieSyncManager.h"
 
 FOUNDATION_EXPORT double KZWWebViewControllerVersionNumber;

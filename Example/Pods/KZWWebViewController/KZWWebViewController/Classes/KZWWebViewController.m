@@ -9,11 +9,13 @@
 #import "KZWWebViewController.h"
 #import "WKCookieSyncManager.h"
 #import "KZWJavaScripInterface.h"
+#import "KZWURLCacheUtil.h"
+#import "KZWWeakScriptMessageDelegate.h"
 #import <KZWUtils/KZWUtils.h>
 #import <KZWUI/KZWUI.h>
 #import <FMWebViewJavascriptBridge/FMWKWebViewBridge.h>
 
-@interface KZWWebViewController ()<WKNavigationDelegate, WKUIDelegate>
+@interface KZWWebViewController ()<WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate>
 
 @property (strong, nonatomic) UIProgressView *progressView;
 @property (strong, nonatomic) NSString *urlString;
@@ -23,7 +25,8 @@
 @property (strong, nonatomic) KZWJavaScripInterface *JavaScripInterface;
 @property(nonatomic, strong) FMWKWebViewBridge *webViewBridge;
 @property(nonatomic, strong) WKWebView *webView;
-@property (strong, nonatomic) UIBarButtonItem *firstBar;
+@property (nonatomic) UIBarButtonItem *leftBarButton;
+@property (nonatomic) UIBarButtonItem *closeBarButton;
 @property (nonatomic, copy) void (^callBack)(NSString *);
 
 @end
@@ -69,16 +72,23 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"KZWWebViewController";
     [self initWebView];
     [self.view addSubview:self.progressView];
-    [self leftBar];
     if (self.urlString.length > 0) {
         [self requestWithUrl];
     }else if (self.htmlString.length > 0) {
         [self requestWithHtml];
     }else {
         [self requestWithRequest];
+    }
+    
+    CGFloat offsetY = 0;
+    offsetY = [[KZWURLCacheUtil sharedInstance] getYPositionForURL:self.webView.URL.absoluteString];
+    
+    if (offsetY) {
+        [UIView animateWithDuration:0.5 delay:1.5 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            [self.webView.scrollView setContentOffset:CGPointMake(0, offsetY) animated:NO];
+        } completion:^(BOOL finished) {}];
     }
 }
 
@@ -100,15 +110,30 @@
     [self.webView loadHTMLString:self.htmlString baseURL:[NSURL URLWithString:[self.baseURL KZW_URLDecodedString]]];
 }
 
-- (void)leftBar {
-    self.firstBar = [[UIBarButtonItem alloc] initWithCustomView:({
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        [button setImage:[self imageWithName:@"ic_colorback"] forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(back) forControlEvents:UIControlEventTouchUpInside];
-        button.frame = CGRectMake(0, 0, 30, 30);
-        button;
-    })];
-    self.navigationItem.leftBarButtonItems = @[ self.firstBar];
+- (UIBarButtonItem *)leftBarButton {
+    if (!_leftBarButton) {
+        _leftBarButton = [[UIBarButtonItem alloc] initWithCustomView:({
+            UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+            [button setImage:[self imageWithName:@"ic_bk_back"] forState:UIControlStateNormal];
+            [button addTarget:self action:@selector(backAction) forControlEvents:UIControlEventTouchUpInside];
+            button.frame = CGRectMake(0, 0, 30, 30);
+            button;
+        })];
+    }
+    return _leftBarButton;
+}
+
+- (UIBarButtonItem *)closeBarButton {
+    if (!_closeBarButton) {
+        _closeBarButton = [[UIBarButtonItem alloc] initWithCustomView:({
+            UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+            [button setImage:[self imageWithName:@"ic_bk_close"] forState:UIControlStateNormal];
+            [button addTarget:self action:@selector(closeAction) forControlEvents:UIControlEventTouchUpInside];
+            button.frame = CGRectMake(0, 0, 30, 30);
+            button;
+        })];
+    }
+    return _closeBarButton;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -121,10 +146,12 @@
                                    initWithSource:[NSString stringWithFormat:@"document.cookie = '%@'", [self setCurrentCookie]]
                                    injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
     [userContentController addUserScript:cookieScript];
+    [userContentController addScriptMessageHandler:[[KZWWeakScriptMessageDelegate alloc] initWithDelegate:self] name:@"BKJFReload"];
     WKCookieSyncManager *cookiesManager = [WKCookieSyncManager sharedWKCookieSyncManager];
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     configuration.processPool = cookiesManager.processPool;
     configuration.userContentController = userContentController;
+    
     self.webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, KZW_NavigationBarHeight, SCREEN_WIDTH, SCREEN_HEIGHT - KZW_NavigationBarHeight) configuration:configuration];
     if (KZW_iPhoneX) {
         self.webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
@@ -135,13 +162,10 @@
     self.webView.scrollView.bounces = NO;
     self.webView.navigationDelegate = self;
     self.webView.UIDelegate = self;
+    [_webView addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:NULL];
+    [_webView addObserver:self forKeyPath:@"loading" options:NSKeyValueObservingOptionNew context:NULL];
+    [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:NULL];
     [self.view addSubview:self.webView];
-    
-    [self.webView addObserver:self
-                   forKeyPath:NSStringFromSelector(@selector(estimatedProgress))
-                      options:0
-                      context:nil];
-    [self.webView addObserver:self forKeyPath:NSStringFromSelector(@selector(title)) options:NSKeyValueObservingOptionNew context:NULL];
 }
 
 - (NSString *)readCurrentCookie {
@@ -186,15 +210,6 @@
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
-    UIBarButtonItem *itemtwo = [[UIBarButtonItem alloc] initWithCustomView:({
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        [button setImage:[self imageWithName:@"cancelimage"] forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(comeBack:) forControlEvents:UIControlEventTouchUpInside];
-        button.frame = CGRectMake(0, 0, 30, 30);
-        button.hidden = !self.webView.canGoBack;
-        button;
-    })];
-    self.navigationItem.leftBarButtonItems = @[self.firstBar, itemtwo];
     if (self.callBack) {
         self.callBack(@"sucess");
     }
@@ -209,7 +224,7 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change
                        context:(void *)context {
-    if ([keyPath isEqualToString:NSStringFromSelector(@selector(estimatedProgress))]
+    if ([keyPath isEqualToString:@"estimatedProgress"]
         && object == self.webView) {
         [self.progressView setAlpha:1.0f];
         BOOL animated = self.webView.estimatedProgress > self.progressView.progress;
@@ -230,16 +245,22 @@
                              }];
         }
     }else if ([keyPath isEqualToString:@"title"]) {
-        if (object == self.webView) {
-            self.title = self.webView.title;
-        } else {
-            [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-        }
+        self.navigationItem.title = self.webView.title;
+    }else if ([keyPath isEqualToString:@"loading"]) {
+        [self setLeftBarButtonItems];
     }else{
         [super observeValueForKeyPath:keyPath
                              ofObject:object
                                change:change
                               context:context];
+    }
+}
+
+- (void)setLeftBarButtonItems {
+    if ([self.webView canGoBack]) {
+        self.navigationItem.leftBarButtonItems = @[self.leftBarButton, self.closeBarButton];
+    }else {
+        self.navigationItem.leftBarButtonItems = @[self.leftBarButton];
     }
 }
 
@@ -251,11 +272,11 @@
     [vc dismissViewControllerAnimated:YES completion:NULL];
 }
 
-- (void)back {
+- (void)backAction {
     if ([self.webView canGoBack]) {
         [self.webView goBack];
     } else {
-        if ([self.navigationController.topViewController isKindOfClass:[KZWWebViewController class]]) {
+        if ([self.navigationController.viewControllers.firstObject isKindOfClass:[KZWWebViewController class]]) {
             [self dismissModalStack];
             return;
         }
@@ -263,8 +284,8 @@
     }
 }
 
-- (void)comeBack:(UIButton *)sender {
-    if ([self.navigationController.topViewController isKindOfClass:[KZWWebViewController class]]) {
+- (void)closeAction {
+    if ([self.navigationController.viewControllers.firstObject isKindOfClass:[KZWWebViewController class]]) {
         [self dismissModalStack];
         return;
     }
@@ -304,11 +325,24 @@
     return image;
 }
 
+#pragma mark - WKScriptMessageHandler
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    
+}
+
+#pragma mark - UIScrollViewDelegate
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    CGFloat offsetY =  self.webView.scrollView.contentOffset.y;
+    [[KZWURLCacheUtil sharedInstance] insertURL:self.webView.URL.absoluteString
+                                       yPosition:offsetY];
+}
+
 - (void)dealloc {
     [self.webView stopLoading];
     self.webView.UIDelegate = nil;
     [self.webView removeObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
     [self.webView removeObserver:self forKeyPath:NSStringFromSelector(@selector(title))];
+    [self.webView removeObserver:self forKeyPath:NSStringFromSelector(@selector(loading))];
     self.webView = nil;
 }
 

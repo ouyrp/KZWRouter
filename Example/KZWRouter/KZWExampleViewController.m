@@ -9,6 +9,7 @@
 #import "KZWExampleViewController.h"
 #import <KZWRouter/KZWRouter.h>
 #import <KZWWebViewController_Category/KZWRouter+KZWWebViewController.h>
+#import <KZWWebViewController_Category/KZWWebView.h>
 
 @interface KZWExampleViewController ()
 
@@ -39,10 +40,17 @@
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
+#pragma mark - protocol的形式
 - (void)webAction {
-    [[KZWRouter sharedRouter] open:@"KZWRouter_KZWWebViewController://KZWWebViewController?urlString=https%3a%2f%2fwww.zhihu.com%2f"];
+//    [[KZWRouter sharedRouter] open:@"KZWRouter_KZWWebViewController://KZWWebViewController?urlString=https%3a%2f%2fwww.zhihu.com%2f"];
+    id<KZWWebView> KZWWebViewService = [[KZWRouter sharedRouter] findProtocolService:@protocol(KZWWebView)];
+    UIViewController *controller = [KZWWebViewService kzw_KZWWebViewController:@"https%3a%2f%2fwww.zhihu.com%2f" callBackHandle:^(NSString *result) {
+        NSLog(@"result:%@", result);
+    }];
+    [self presentViewController:[[UINavigationController alloc] initWithRootViewController:controller] animated:YES completion:nil];
 }
 
+#pragma mark - category的形式
 - (void)webBlock {
     UIViewController *controller = [[KZWRouter sharedRouter] kzw_KZWWebViewController:@"https%3a%2f%2fwww.zhihu.com%2f" callBackHandle:^(NSString *result) {
         NSLog(@"result:%@", result);
