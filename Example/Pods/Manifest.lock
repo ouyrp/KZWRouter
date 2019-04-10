@@ -28,7 +28,7 @@ PODS:
   - KZWUtils/Content (1.0.7):
     - MJRefresh
     - SAMKeychain
-  - KZWWebViewController (2.0.4):
+  - KZWWebViewController (2.0.5):
     - FMWebViewJavascriptBridge
     - KZWUI
     - KZWWebViewController_Category
@@ -36,13 +36,12 @@ PODS:
     - KZWRouter
   - Masonry (1.1.0)
   - MBProgressHUD (1.1.0)
-  - MJRefresh (3.1.15.7)
+  - MJRefresh (3.1.16)
   - SAMKeychain (1.5.3)
 
 DEPENDENCIES:
   - KZWRouter (from `../`)
   - KZWWebViewController
-  - KZWWebViewController_Category
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -67,13 +66,13 @@ SPEC CHECKSUMS:
   KZWRouter: c631b96513d32d7e5dfb8ea163020abc81ce2c36
   KZWUI: b73999156e2a43a9d169a8b90f91497e5dccf74d
   KZWUtils: f0a620e93f7b65af6546bc3dc196ff4c90346a47
-  KZWWebViewController: 2984208d4d54a6d57bdef28d1abccfd80cd4cd97
+  KZWWebViewController: ef30451fff5cd59a85348f5ecde291800d2d7e0d
   KZWWebViewController_Category: bcc8afa836ea92227bfcc5b89d0d893537e01c07
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
-  MJRefresh: 697f8ec75ebdbe9207767bb682cf0f51b0d8a41f
+  MJRefresh: 7798e16e53a5ef7f332dd05b27664db4e29530fd
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
 
-PODFILE CHECKSUM: c9cb751b122708a3332d1621186d728aa64190d2
+PODFILE CHECKSUM: b2bf8492c8d6c34dab20f1324a527467b79f92fb
 
 COCOAPODS: 1.6.1

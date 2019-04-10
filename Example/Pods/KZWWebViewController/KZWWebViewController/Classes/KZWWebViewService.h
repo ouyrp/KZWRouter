@@ -6,11 +6,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <KZWWebViewController_Category/KZWWebView.h>
+#import <KZWWebViewController_Category/KZWWebViewProtocol.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface KZWWebViewService : NSObject <KZWWebView>
+@interface KZWWebViewService : NSObject <KZWWebViewProtocol>
 
 @end
 

@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol KZWWebView <NSObject>
+@protocol KZWWebViewProtocol <NSObject>
 
 @optional
 
