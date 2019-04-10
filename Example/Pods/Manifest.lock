@@ -42,7 +42,7 @@ PODS:
 DEPENDENCIES:
   - KZWRouter (from `../`)
   - KZWWebViewController
-  - KZWWebViewController_Category (from `../../KZWWebViewController_Category`)
+  - KZWWebViewController_Category
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -51,6 +51,7 @@ SPEC REPOS:
     - KZWUI
     - KZWUtils
     - KZWWebViewController
+    - KZWWebViewController_Category
     - Masonry
     - MBProgressHUD
     - MJRefresh
@@ -59,8 +60,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   KZWRouter:
     :path: "../"
-  KZWWebViewController_Category:
-    :path: "../../KZWWebViewController_Category"
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
@@ -75,6 +74,6 @@ SPEC CHECKSUMS:
   MJRefresh: 697f8ec75ebdbe9207767bb682cf0f51b0d8a41f
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
 
-PODFILE CHECKSUM: af8e7ca4dae7cf2f7d0fca9179979b4412370b74
+PODFILE CHECKSUM: c9cb751b122708a3332d1621186d728aa64190d2
 
 COCOAPODS: 1.6.1
