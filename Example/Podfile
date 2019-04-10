@@ -4,7 +4,7 @@ platform :ios, '8.0'
 
 target 'KZWRouter_Example' do
   pod 'KZWRouter', :path => '../'
-  pod 'KZWWebViewController_Category'
+  pod 'KZWWebViewController_Category', :path => '../../KZWWebViewController_Category'
   pod 'KZWWebViewController'
 
   target 'KZWRouter_Tests' do

@@ -7,9 +7,8 @@
 
 #import "KZWRouter.h"
 
-#ifndef Protocol_Service
-#define Protocol_Service @"Service"
-#endif
+NSString *const ServiceString = @"Service";
+NSString *const ProtocolString = @"Protocol";
 
 NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParamsKeySwiftTargetModuleName";
 
@@ -36,7 +35,7 @@ NSString * const KZWMediatorParamsKeySwiftTargetModuleName = @"KZWMediatorParams
 }
 
 - (Class)classForProtocol:(Protocol *)protocol {
-    NSString *clsString = [NSStringFromProtocol(protocol) stringByAppendingString: Protocol_Service];
+    NSString *clsString = [NSStringFromProtocol(protocol) stringByReplacingOccurrencesOfString:ProtocolString withString:ServiceString];
     return NSClassFromString(clsString);
 }
 

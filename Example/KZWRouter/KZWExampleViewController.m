@@ -9,7 +9,7 @@
 #import "KZWExampleViewController.h"
 #import <KZWRouter/KZWRouter.h>
 #import <KZWWebViewController_Category/KZWRouter+KZWWebViewController.h>
-#import <KZWWebViewController_Category/KZWWebView.h>
+#import <KZWWebViewController_Category/KZWWebViewProtocol.h>
 
 @interface KZWExampleViewController ()
 
@@ -42,8 +42,7 @@
 
 #pragma mark - protocol的形式
 - (void)webAction {
-//    [[KZWRouter sharedRouter] open:@"KZWRouter_KZWWebViewController://KZWWebViewController?urlString=https%3a%2f%2fwww.zhihu.com%2f"];
-    id<KZWWebView> KZWWebViewService = [[KZWRouter sharedRouter] findProtocolService:@protocol(KZWWebView)];
+    id<KZWWebViewProtocol> KZWWebViewService = [[KZWRouter sharedRouter] findProtocolService:@protocol(KZWWebViewProtocol)];
     UIViewController *controller = [KZWWebViewService kzw_KZWWebViewController:@"https%3a%2f%2fwww.zhihu.com%2f" callBackHandle:^(NSString *result) {
         NSLog(@"result:%@", result);
     }];
